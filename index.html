@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>JSON Filler</title>
+	<style>
+		body
+		{
+			margin-top: 1em;
+		}
+
+		*
+		{
+			margin: 0 auto;
+			text-align: center;
+		}
+
+		textarea, input
+		{
+			display: block;
+			margin-top: 0.5em;
+			margin-bottom: 0.5em;
+			text-align: left;
+		}
+
+		.hidden
+		{
+			display: none;
+		}
+	</style>
+	<script src='js/jquery-2.1.1.min.js'></script>
+</head>
+<body>
+
+<div id='JSONInput'>
+	<label for='txtJSONInput'>JSON:</label>
+	<textarea id='txtJSONInput' rows='20' autofocus></textarea>
+	<button id='btnSubmitJSON'>Submit</button>
+</div>
+
+<div id='JSONFiller' class='hidden'>
+	<span id='JSONKey'></span>
+	<input type='text' id='txtJSONValue'></input>
+</div>
+
+<div id="JSONResult" class='hidden'>
+	<textarea id="txtJSONResult" rows='20'></textarea>
+</div>
+
+<script>
+(function()
+{
+	var JSONData;
+	var fillingInProgress = false;
+	var JSONKeys;
+	var currentPair;
+	var filledData = [];
+
+	$('#btnSubmitJSON').click(startFiller);
+
+	function startFiller()
+	{
+		$('#JSONInput').hide();
+		$('#JSONFiller').show();
+
+		filledData = []; //reset
+		JSONData = JSON.parse($('#txtJSONInput').val());
+
+		console.log(JSONData);
+
+		currentPair = JSONData.shift();
+
+		$('#JSONKey').html(currentPair.key);
+
+		if(currentPair.value.length > 0) //value already filled
+		{
+			$('#txtJSONValue').val(currentPair.value);
+		}
+
+		//JSONKeys = JSONData.keys;
+		
+		//console.log(JSONData[0].key);
+
+		fillingInProgress = true;
+
+		$('#txtJSONValue').focus();
+	}
+
+	$('#txtJSONValue').keypress(function(event)
+	{
+        if (event.keyCode == 13 && fillingInProgress) // ENTER
+        {
+        	var value = $('#txtJSONValue').val();
+
+        	if(value.length < 1)
+        	{
+        		value = currentPair.key;
+        	}
+
+            currentPair.value = value;
+            filledData.push(currentPair);
+
+            currentPair = JSONData.shift();
+
+            $('#txtJSONValue').val(''); //clear text
+
+            if(currentPair == null) // finished
+            {
+            	fillingInProgress = false;
+            	alert('done');
+
+            	console.log(filledData);
+
+            	//$('#JSONInput').show();
+				$('#JSONFiller').hide();
+				//$('#txtJSONInput').focus();
+				
+				$('#JSONResult').show();
+				$('#txtJSONResult').val(JSON.stringify(filledData, null, 4));
+				$('#txtJSONResult').focus();
+				
+            }
+            else //continue
+            {
+            	if(currentPair.value.length > 0) //value already filled
+				{
+					$('#txtJSONValue').val(currentPair.value);
+				}
+
+            	$('#JSONKey').html(currentPair.key);
+            	$('#txtJSONValue').focus();
+            }
+        }
+    });
+
+
+}());
+</script>
+</body>
+</html>
